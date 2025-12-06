@@ -1,0 +1,14 @@
+[project]
+name = "mysql-client"
+version = "0.1.0"
+description = "Python + uv MySQL client"
+requires-python = ">=3.12"
+dependencies = [
+    "google-api-python-client>=2.187.0",
+    "google-auth-httplib2>=0.2.1",
+    "google-auth-oauthlib>=1.2.3",
+    "mysql-connector-python",
+    "python-dotenv>=1.2.1",
+]
+
+[tool.uv]

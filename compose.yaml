@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/initdb.d:/docker-entrypoint-initdb.d
+      - ./db/volume:/var/lib/mysql
+
+  app:
+    build:
+      context: ./app
+    container_name: python-app
+    command: uv run main.py
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+
+  kacfe:
+    build:
+      context: ./kacfe
+    container_name: kacfe
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
