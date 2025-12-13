@@ -7,8 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.124.4",
     "mysql-connector-python>=9.5.0",
-    "pytest>=9.0.2",
-    "pytest-mock>=3.15.1",
     "python-multipart>=0.0.20",
     "requests>=2.32.5",
     "uvicorn[standard]>=0.38.0",
@@ -18,4 +16,10 @@ dependencies = [
 members = [
     "agentapi",
     "be",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-mock>=3.15.1",
 ]

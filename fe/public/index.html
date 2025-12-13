@@ -170,10 +170,7 @@
   </div>
 
   <script>
-    // API はバックエンド (be) に分離されました。
-    // ブラウザから直接 be にアクセスする場合はポート 3001 を想定しています。
-    // （コンテナ環境では適宜ホストを調整してください）
-    const API_BASE = 'http://localhost:3001';
+    const API_BASE = 'http://localhost:8000';
 
     // 予約データ取得
     async function loadReservations() {

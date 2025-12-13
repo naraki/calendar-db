@@ -1,11 +1,3 @@
-"""Compatibility shim: expose the FastAPI `app` at `be.main`.
-
-Tests and some run commands import `be.main:app`. The implementation lives
-in `be/src/main.py`, so re-export the `app` here.
-"""
-from be.src.main import app
-
-__all__ = ["app"]
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
@@ -15,11 +7,12 @@ import sys
 from pathlib import Path
 
 # PYTHONPATHに親ディレクトリを追加
-sys.path.insert(0, str(Path(__file__).parent.parent))
+#sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from be import db
+#from be import db
+import db
 
-app = FastAPI(title="kac-be (FastAPI)")
+app = FastAPI(title="kac-be")
 
 # CORS: 開発中は全許可。必要に応じて限定してください。
 app.add_middleware(

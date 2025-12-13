@@ -40,7 +40,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3001:3001"
+      - "8000:8000"
     depends_on:
       - db
 
@@ -54,4 +54,5 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      - kacbe
+ 
