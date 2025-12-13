@@ -28,16 +28,28 @@ services:
     depends_on:
       - db
 
-  kacfe:
+  kacbe:
     build:
-      context: ./kacfe
-    container_name: kacfe
+      context: ./be
+    container_name: kacbe
     restart: unless-stopped
     environment:
+      NODE_ENV: production
       MYSQL_HOST: db
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+
+  kacfe:
+    build:
+      context: ./fe
+    container_name: kacfe
+    restart: unless-stopped
+    environment:
       NODE_ENV: production
     ports:
       - "3000:3000"

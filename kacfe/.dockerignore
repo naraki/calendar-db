@@ -1,9 +1,0 @@
-node_modules
-dist
-.git
-.gitignore
-README.md
-spec.md
-spec2.md
-.env
-.env.example

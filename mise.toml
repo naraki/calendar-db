@@ -1,2 +1,6 @@
+[env]
+mise.file = ".env"
+
 [tools]
 node = "24.11.1"
+
