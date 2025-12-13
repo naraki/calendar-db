@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>予約一覧</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 24px;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    
+    thead {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+    
+    .import-section {
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 2px solid #f0f0f0;
+    }
+    
+    .import-section h2 {
+      color: #333;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    
+    .file-input-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #218838;
+    }
+    
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .status-success {
+      color: #28a745;
+      background-color: #d4edda;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .status-error {
+      color: #dc3545;
+      background-color: #f8d7da;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>予約一覧</h1>
+    
+    <div id="loading" class="loading">読み込み中...</div>
+    <div id="empty-state" class="empty-state" style="display: none;">データがありません</div>
+    
+    <table id="reservations-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>団体名</th>
+          <th>ID</th>
+          <th>予約の状況</th>
+          <th>予約番号</th>
+          <th>利用日時</th>
+          <th>利用施設名</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    
+    <div class="import-section">
+      <h2>CSVインポート</h2>
+      <div class="file-input-wrapper">
+        <input type="file" id="csv-file" accept=".csv" />
+        <button id="import-btn">インポート</button>
+      </div>
+      <div id="status-success" class="status-success"></div>
+      <div id="status-error" class="status-error"></div>
+    </div>
+  </div>
+
+  <script>
+    // API はバックエンド (be) に分離されました。
+    // ブラウザから直接 be にアクセスする場合はポート 3001 を想定しています。
+    // （コンテナ環境では適宜ホストを調整してください）
+    const API_BASE = 'http://localhost:3001';
+
+    // 予約データ取得
+    async function loadReservations() {
+      try {
+        const response = await fetch(`${API_BASE}/api/reservations`);
+        const data = await response.json();
+        
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('empty-state');
+        const table = document.getElementById('reservations-table');
+        const tbody = document.getElementById('table-body');
+        
+        loading.style.display = 'none';
+        
+        if (data.length === 0) {
+          emptyState.style.display = 'block';
+          table.style.display = 'none';
+          return;
+        }
+        
+        emptyState.style.display = 'none';
+        table.style.display = 'table';
+        
+        tbody.innerHTML = data.map(row => `
+          <tr>
+            <td>${escapeHtml(row.organization_name || '')}</td>
+            <td>${escapeHtml(row.id)}</td>
+            <td>${escapeHtml(row.status)}</td>
+            <td>${row.reservation_number}</td>
+            <td>${escapeHtml(row.full_datetime_string || '')}</td>
+            <td>${escapeHtml(row.facility_name || '')}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading reservations:', error);
+        document.getElementById('loading').innerHTML = 'エラーが発生しました';
+      }
+    }
+
+    // CSVインポート
+    document.getElementById('import-btn').addEventListener('click', async () => {
+      const fileInput = document.getElementById('csv-file');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        showStatus('error', 'ファイルを選択してください');
+        return;
+      }
+      
+      try {
+        const text = await file.text();
+        const response = await fetch(`${API_BASE}/api/import-csv`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/csv' },
+          body: text,
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showStatus('success', result.message);
+          fileInput.value = '';
+          await loadReservations();
+        } else {
+          showStatus('error', result.error || 'インポートに失敗しました');
+        }
+      } catch (error) {
+        console.error('Import error:', error);
+        showStatus('error', 'インポート処理でエラーが発生しました');
+      }
+    });
+
+    function showStatus(type, message) {
+      const successEl = document.getElementById('status-success');
+      const errorEl = document.getElementById('status-error');
+      
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+      
+      if (type === 'success') {
+        successEl.textContent = message;
+        successEl.style.display = 'block';
+      } else {
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ページロード時にデータを読み込む
+    loadReservations();
+  </script>
+</body>
+</html>
