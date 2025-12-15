@@ -8,11 +8,15 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, '../public')));
 
 // SPA のための Fallback: 未定義のルートは index.html にフォールバック
+// `/list` は静的な `list.html` を返す（まだクライアントをビルドしていない場合の互換性）
+app.get('/list*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'list.html'));
+});
+
+// それ以外はトップページ (index.html) にフォールバック
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
-
-// NOTE: API は backend (be) に移行しました。フロントエンドは API を直接 be に問い合わせるようにしてください。
 
 app.listen(PORT, () => {
   console.log(`Frontend server (static) running on port ${PORT}`);
